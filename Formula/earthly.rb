@@ -41,7 +41,7 @@ class Earthly < Formula
     (testpath/"build.earthly").write <<~EOS
 
       default:
-      \tRUN echo Homebrew
+      \tRUN echo homebrew-earthly
     EOS
 
     output = shell_output("#{bin}/earthly --buildkit-host 127.0.0.1 +default 2>&1", 6).strip
