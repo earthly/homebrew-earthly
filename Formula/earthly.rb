@@ -42,7 +42,7 @@ class Earthly < Formula
       \tRUN echo homebrew-earthly
     EOS
 
-    output = shell_output("#{bin}/earthly --buildkit-host 127.0.0.1 +default 2>&1", 6).strip
-    assert_match "buildkitd failed to start", output
+    output = shell_output("#{bin}/earthly --version").strip
+    assert output.start_with?("earthly version")
   end
 end
