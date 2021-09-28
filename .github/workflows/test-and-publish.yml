@@ -1,0 +1,120 @@
+name: brew test and publish bot
+on:
+  push:
+    branches:
+      - release-*
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Cache Homebrew Bundler RubyGems
+        id: cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ runner.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ runner.os }}-rubygems-
+
+      - name: Install Homebrew Bundler RubyGems
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: brew install-bundler-gems
+
+      - run: brew test-bot --verbose ./Formula/earthly.rb
+
+      - run: find . | grep -i earthly
+
+      # homebrew intentially adds in two hyphens under
+      # https://github.com/Homebrew/brew/blob/b55498269f1fb0380cfd7122f6bbc0fc0125c35f/Library/Homebrew/software_spec.rb#L279
+      - name: remove double hyphens which are produced by test-bot
+        run: ls earthly--* | grep bottle | awk -F "--" '{print "mv " $0 " " $1"-"$2}' | sh
+
+      - name: test bottles do not contain double hyphens
+        run: if find . | grep "earthly--"; then echo "two hyphens should not happen"; exit 1; fi
+
+      - name: test at least one bottle has been produced
+        run: find . | grep -i earthly | grep bottle
+
+      - name: Upload bottles as artifact
+        uses: actions/upload-artifact@main
+        with:
+          name: bottles
+          path: '*.bottle.*'
+  bottle-and-merge:
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Homebrew
+        uses: Homebrew/actions/setup-homebrew@master
+
+      - name: Set up git
+        uses: Homebrew/actions/git-user-config@master
+
+      - name: setup github-release
+        run: npm install -g github-release-cli@v1.3.1
+
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v2
+
+      - name: list bottles
+        run: find bottles && cat bottles/*.json
+
+      - name: merge bottles
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+        run: brew bottle --merge --root-url "https://github.com/$GITHUB_REPOSITORY/releases/download/" --write bottles/*.json
+
+      - name: release bottles
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |-
+          set -e
+          VERSION="${GITHUB_REF#refs/heads/release-v}"
+          if ! echo $VERSION | grep '^[0-9]\+\.[0-9]\+\.[0-9]\+$' >/dev/null; then
+            echo "ERROR: failed to detect semantic version; got $VERSION"
+            exit 1
+          fi
+          RELEASE_TAG="earthly-$VERSION"
+          # first delete any previously released files (needed in case the previous upload attempt failed)
+          PREV_RELEASE_ID=$(curl -s -H "Authorization: token $GITHUB_TOKEN" "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" | jq .id)
+          if [ -n "$PREV_RELEASE_ID" ] && [ "$PREV_RELEASE_ID" != "null" ]; then
+            echo "deleting previous release ID $PREV_RELEASE_ID"
+            curl -s -H "Authorization: token $GITHUB_TOKEN" --request DELETE "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/$PREV_RELEASE_ID"
+          fi
+          # next make sure any previous tag is deleted (otherwise github will create an untagged release name vX.Y.Z)
+          echo "deleting tag $RELEASE_TAG (in case it already exists)"
+          curl -s -H "Authorization: token $GITHUB_TOKEN" --request DELETE "https://api.github.com/repos/$GITHUB_REPOSITORY/git/refs/tags/$RELEASE_TAG"
+          GITHUB_OWNER=$(dirname "$GITHUB_REPOSITORY")
+          GITHUB_REPO=$(basename "$GITHUB_REPOSITORY")
+          github-release upload \
+          --owner "$GITHUB_OWNER" \
+          --repo "$GITHUB_REPO" \
+          --prerelease false \
+          --commitish "$GITHUB_SHA" \
+          --tag "$RELEASE_TAG" \
+          --name "$RELEASE_TAG" \
+          --body "earthly: update $VERSION bottle." \
+          ./bottles/*.tar.gz 2>&1 | tee /tmp/release.log
+          if grep -i error /tmp/release.log > /dev/null; then
+            echo "ERROR: github-release upload failed: check the above release.log output" && exit 1
+          fi
+
+      - name: merge into main and delete release branch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |-
+          # this should be different than GITHUB_SHA, due to brew bottle comitting a change
+          SHA=$(git rev-parse HEAD)
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git fetch -a
+          git checkout main
+          git reset --hard origin/main
+          git merge "$SHA"
+          git push origin main
+          git push origin --delete "$GITHUB_REF"
