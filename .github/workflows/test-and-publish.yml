@@ -96,3 +96,4 @@ jobs:
           git merge "$SHA"
           git push origin main
           git push origin --delete "$GITHUB_REF"
+          curl -s -X POST -H 'Content-type: application/json' --data '{"text":"homebrew-earthly: Successfully merged release branch into main"}' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
