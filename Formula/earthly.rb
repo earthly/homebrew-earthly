@@ -12,8 +12,8 @@ class Earthly < Formula
   end
 
   bottle do
-    root_url "https://github.com/earthly/homebrew-earthly/releases/download/earthly-0.6.14"
-    sha256 cellar: :any_skip_relocation, big_sur: "22ebc9127dc90895150aa9db2b775ad8d09a36ec815afeed70c06bc05d308f77"
+    root_url "https://github.com/earthly/homebrew-earthly/releases/download/earthly-0.6.15"
+    sha256 cellar: :any_skip_relocation, big_sur: "8d4001f03a34be8dd9dc11827442ca3b528020232db8a5248d9ac18046628dff"
   end
 
   depends_on "go@1.17" => :build
