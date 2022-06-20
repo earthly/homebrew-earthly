@@ -1,0 +1,13 @@
+VERSION 0.6
+
+deps:
+    FROM homebrew/brew:3.5.5 # ubuntu-based
+    COPY github-keyscan /home/linuxbrew/.ssh/known_hosts
+    RUN git config --global user.email "github-service@earthly.dev" && \
+        git config --global user.name "Griswold the cat"
+
+open-homebrew-core-pr:
+    FROM +deps
+    RUN --no-cache \
+        --secret HOMEBREW_GITHUB_API_TOKEN=+secrets/earthly-technologies/github/griswoldthecat/token \
+        brew bump earthly --open-pr
