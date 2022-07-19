@@ -30,7 +30,7 @@ class Earthly < Formula
         "-tags", tags,
         "-ldflags", ldflags,
         *std_go_args,
-        "./cmd/earthly/main.go"
+        "./cmd/earthly"
 
     bash_output = Utils.safe_popen_read("#{bin}/earthly", "bootstrap", "--source", "bash")
     (bash_completion/"earthly").write bash_output
