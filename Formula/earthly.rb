@@ -1,8 +1,8 @@
 class Earthly < Formula
   desc "Build automation tool for the container era"
   homepage "https://earthly.dev/"
-  url "https://github.com/earthly/earthly/archive/v0.6.19.tar.gz"
-  sha256 "866d0c448cdfed1ddcc49b41bf9df1c6791ffbdb60011a0c1ce4cca12da08252"
+  url "https://github.com/earthly/earthly/archive/v0.6.20.tar.gz"
+  sha256 "f925645c2b20bb748d1b6b9559abdeeb595626876182b9753ac42e884db512b3"
   license "MPL-2.0"
   head "https://github.com/earthly/earthly.git", branch: "main"
 
@@ -12,8 +12,8 @@ class Earthly < Formula
   end
 
   bottle do
-    root_url "https://github.com/earthly/homebrew-earthly/releases/download/earthly-0.6.19"
-    sha256 cellar: :any_skip_relocation, big_sur: "e87ea935e3deb1985edf536fa47624a69fb75314a40769b9d92849f22e28afbd"
+    root_url "https://github.com/earthly/homebrew-earthly/releases/download/earthly-0.6.20"
+    sha256 cellar: :any_skip_relocation, big_sur: "bf3ac95af212c50f434ee07e23721a9a3b9d1a558408098effb2ce9aad521c23"
   end
 
   depends_on "go@1.17" => :build
@@ -23,14 +23,14 @@ class Earthly < Formula
     # the ldflags string will break the upstream release process.
     earthly_gitsha = "7e4f1df4c124db1644d51d312b19313217cbe478"
 
-    ldflags = "-X main.DefaultBuildkitdImage=docker.io/earthly/buildkitd:v#{version} -X main.Version=v#{version} -X main.GitSha=d3edff34e19a6e026bbb97d01f6bc44babfa2726 " \
+    ldflags = "-X main.DefaultBuildkitdImage=docker.io/earthly/buildkitd:v#{version} -X main.Version=v#{version} -X main.GitSha=ad869c06c884b10f88948b5852ab22b4d7262e20 " \
               "-X main.GitSha=#{earthly_gitsha}"
     tags = "dfrunmount dfrunsecurity dfsecrets dfssh dfrunnetwork dfheredoc forceposix"
     system "go", "build",
         "-tags", tags,
         "-ldflags", ldflags,
         *std_go_args,
-        "./cmd/earthly/main.go"
+        "./cmd/earthly"
 
     bash_output = Utils.safe_popen_read("#{bin}/earthly", "bootstrap", "--source", "bash")
     (bash_completion/"earthly").write bash_output
