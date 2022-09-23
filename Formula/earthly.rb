@@ -32,10 +32,7 @@ class Earthly < Formula
         *std_go_args,
         "./cmd/earthly"
 
-    bash_output = Utils.safe_popen_read("#{bin}/earthly", "bootstrap", "--source", "bash")
-    (bash_completion/"earthly").write bash_output
-    zsh_output = Utils.safe_popen_read("#{bin}/earthly", "bootstrap", "--source", "zsh")
-    (zsh_completion/"_earthly").write zsh_output
+    generate_completions_from_executable(bin/"earthly", "bootstrap", "--source", shells: [:bash, :zsh])
   end
 
   test do
