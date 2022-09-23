@@ -100,5 +100,5 @@ jobs:
 
       - name: post to slack on failure
         run: |-
-          curl -s -X POST -H 'Content-type: application/json' --data '{"text":"homebrew-earthly: Failed to build release"}' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
+          curl -s -X POST -H 'Content-type: application/json' --data '{ "attachments": [ { "fallback": "Failed to build release", "title": "earthly/homebrew-earthly tap", "title_link": "https://github.com/earthly/homebrew-earthly", "text": "Failed to build release!", "color": "#CC0000" } ] }' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
         if: ${{ failure() }}
