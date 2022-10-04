@@ -8,6 +8,18 @@ deps:
 
 open-homebrew-core-pr:
     FROM +deps
+
+    # the brew bump tool requires that griswoldthecat's fork of homebrew-core be updated to match the upstream master
+    # otherwise, a merge-conflict will prevent the PR from being accepted.
     RUN --no-cache \
+        --mount type=secret,id=+secrets/earthly-technologies/github/griswoldthecat/id_rsa,target=.ssh/id_rsa \
         --secret HOMEBREW_GITHUB_API_TOKEN=+secrets/earthly-technologies/github/griswoldthecat/token \
+        eval "$(ssh-agent)" && \
+        cat .ssh/id_rsa | ssh-add - && \
+        git init homebrew-core && \
+        cd homebrew-core && \
+        git remote add Homebrew git@github.com:Homebrew/homebrew-core.git && \
+        git remote add griswoldthecat git@github.com:griswoldthecat/homebrew-core.git && \
+        git fetch Homebrew && \
+        git push griswoldthecat Homebrew/master:master && \
         brew bump earthly --open-pr
