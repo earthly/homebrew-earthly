@@ -12,16 +12,8 @@ As described on the [get earthly](https://earthly.dev/get-earthly) page.
 
 ## FAQ
 
-### Why does brew install return an `incompatible license` error
+### What's the difference between homebrew-core and earthly/earthly/earthly
 
-If you run `brew install earthly`, you will get the following error:
+If you run `brew install earthly`, you will install the version from [homebrew-core](https://github.com/homebrew/homebrew-core), which is controlled by the homebrew community.
 
-```
-Error: earthly has been disabled because it has an incompatible license!
-```
-
-This is because the [version](https://github.com/Homebrew/homebrew-core/blob/master/Formula/earthly.rb) of earthly in homebrew's main homebrew-core repo is obsolete. Instead, you must run:
-
-```
-brew install earthly/earthly/earthly && earthly bootstrap
-```
+Instead, it's recommended to install earthly from the earthly tap, which is maintained by earthly, and is part of the official earthly release process. This means near-zero delay between propigating a [binary release](https://github.com/earthly/earthly/releases) to the tap. Releases to the homebrew-core tap, on the otherhand, must be approved by the homebrew-core maintainers which introduces delay.
