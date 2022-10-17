@@ -1,8 +1,8 @@
 class Earthly < Formula
   desc "Build automation tool for the container era"
   homepage "https://earthly.dev/"
-  url "https://github.com/earthly/earthly/archive/v0.6.26.tar.gz"
-  sha256 "6b9c6cebc054fee4e46f0accd549b0dd745bbf20ffe6391941596e42c3de2d98"
+  url "https://github.com/earthly/earthly/archive/v0.6.27.tar.gz"
+  sha256 "bf9442995c6f2795e47dd60d8d1d550610d476f722909188b5d76b2afb006412"
   license "MPL-2.0"
   head "https://github.com/earthly/earthly.git", branch: "main"
 
@@ -23,7 +23,7 @@ class Earthly < Formula
     # the ldflags string will break the upstream release process.
     earthly_gitsha = "7e4f1df4c124db1644d51d312b19313217cbe478"
 
-    ldflags = "-X main.DefaultBuildkitdImage=docker.io/earthly/buildkitd:v#{version} -X main.Version=v#{version} -X main.GitSha=4a8d66e3b30d8ee758e7d71b40bc027f92e9adf4 " \
+    ldflags = "-X main.DefaultBuildkitdImage=docker.io/earthly/buildkitd:v#{version} -X main.Version=v#{version} -X main.GitSha=eab653d7fd99146a1f72df1ddaebd64e90b24046 " \
               "-X main.GitSha=#{earthly_gitsha}"
     tags = "dfrunmount dfrunsecurity dfsecrets dfssh dfrunnetwork dfheredoc forceposix"
     system "go", "build",
