@@ -16,7 +16,7 @@ class Earthly < Formula
     sha256 cellar: :any_skip_relocation, big_sur: "3344eda30b5e256768c461ee67b8b77f63ac33651b91e276b26f92024b499b19"
   end
 
-  depends_on "go@1.17" => :build
+  depends_on "go@1.19" => :build
 
   def install
     # the earthly_gitsha variable is required by the earthly release script, moving this value it into
