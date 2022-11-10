@@ -19,6 +19,7 @@ class Earthly < Formula
   depends_on "go@1.19" => :build
 
   def install
+    ENV["CGO_ENABLED"] = "0"
     # the earthly_gitsha variable is required by the earthly release script, moving this value it into
     # the ldflags string will break the upstream release process.
     earthly_gitsha = "7e4f1df4c124db1644d51d312b19313217cbe478"
