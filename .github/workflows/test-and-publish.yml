@@ -4,7 +4,7 @@ on:
     branches:
       - release-*
 jobs:
-  tests:
+  release:
     runs-on: macos-latest
     steps:
       - name: Set up Homebrew
@@ -100,5 +100,29 @@ jobs:
 
       - name: post to slack on failure
         run: |-
-          curl -s -X POST -H 'Content-type: application/json' --data '{ "attachments": [ { "fallback": "Failed to build release", "title": "earthly/homebrew-earthly tap", "title_link": "https://github.com/earthly/homebrew-earthly", "text": "Failed to build release!", "color": "#CC0000" } ] }' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
+          curl -s -X POST -H 'Content-type: application/json' --data '{ "attachments": [ { "fallback": "Failed to build release", "title": "earthly/homebrew-earthly tap", "title_link": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID", "text": "Failed to build release!", "color": "#CC0000" } ] }' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
+        if: ${{ failure() }}
+
+  homebrewcore-pr:
+    needs: release
+    name: open homebrew-core PR
+    runs-on: ubuntu-latest
+    env:
+      FORCE_COLOR: 1
+      EARTHLY_TOKEN: "${{ secrets.EARTHLY_TOKEN }}"
+      EARTHLY_INSTALL_ID: "earthly-githubactions"
+    steps:
+      - uses: earthly/actions-setup@v1.0.1
+      - uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: run
+        run: |-
+          cd .release-to-homebrew-core
+          earthly +open-homebrew-core-pr
+          curl -s -X POST -H 'Content-type: application/json' --data '{"text":"homebrew-earthly: Successfully opened homebrew-core PR"}' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
+
+      - name: post to slack on failure
+        run: |-
+          curl -s -X POST -H 'Content-type: application/json' --data '{ "attachments": [ { "fallback": "Failed to open homebrew-core PR", "title": "earthly/homebrew-earthly homebrew-core PR", "title_link": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID", "text": "Failed to build release!", "color": "#CC0000" } ] }' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
         if: ${{ failure() }}
