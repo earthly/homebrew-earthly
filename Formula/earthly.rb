@@ -8,7 +8,7 @@ class Earthly < Formula
   head "https://github.com/earthly/earthly.git", branch: "main"
 
   bottle do
-    root_url "https://github.com/earthly/homebrew-earthly/releases/download/earthly-0.6.30"
+    root_url "https://github.com/earthly/homebrew-earthly/releases/download"
     rebuild 2
     sha256 cellar: :any_skip_relocation, monterey: "fb03e8926919263c3ed5d2938e69eb677b151dda23fcb99982eb69ce26de1251"
   end
