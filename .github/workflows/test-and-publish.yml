@@ -26,6 +26,16 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         run: brew install-bundler-gems
 
+      - name: Docker mirror login (Earthly Only)
+        run: |-
+          brew install docker
+          sudo mkdir -p /etc/docker/
+          echo '{
+            "registry-mirrors": ["https://registry-1.docker.io.mirror.corp.earthly.dev"]
+          }' | sudo tee /etc/docker/daemon.json
+          docker login registry-1.docker.io.mirror.corp.earthly.dev --username "${{ secrets.DOCKERHUB_MIRROR_USERNAME }}" --password "${{ secrets.DOCKERHUB_MIRROR_PASSWORD }}"
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+
       - run: brew test-bot --verbose ./Formula/earthly.rb
 
       # homebrew intentially adds in two hyphens under
