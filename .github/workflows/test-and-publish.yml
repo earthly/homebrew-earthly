@@ -57,7 +57,7 @@ jobs:
       - name: merge bottles
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
-        run: brew bottle --merge --root-url "https://github.com/$GITHUB_REPOSITORY/releases/download/" --write bottles/*.json
+        run: brew bottle --debug --verbose --merge --write  --no-commit --root-url "https://github.com/$GITHUB_REPOSITORY/releases/download/" bottles/*.json && pwd && git status && git diff && git branch -a && git rev-parse HEAD && cat Formula/earthly.rb
 
       # "brew test-bot" removes dependencies; we must re-install them here
       - name: (re)install dependencies
@@ -107,6 +107,11 @@ jobs:
         run: |-
           # this should be different than GITHUB_SHA, due to brew bottle comitting a change
           SHA=$(git rev-parse HEAD)
+          echo "sha is $SHA"
+          git diff
+          find .
+          cat Formula/earthly.rb
+          exit 2
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git fetch -a
           git checkout main
