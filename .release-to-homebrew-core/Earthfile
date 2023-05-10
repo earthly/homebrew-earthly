@@ -1,25 +1,38 @@
-VERSION 0.6
+VERSION 0.7
+PROJECT earthly-technologies/homebrew
 
 deps:
-    FROM homebrew/brew:3.5.5 # ubuntu-based
+    FROM homebrew/brew:4.0.17 # ubuntu-based
     COPY github-keyscan /home/linuxbrew/.ssh/known_hosts
     RUN git config --global user.email "github-service@earthly.dev" && \
-        git config --global user.name "Griswold the cat"
+        git config --global user.name "Little Red Corvette"
 
 open-homebrew-core-pr:
     FROM +deps
 
-    # the brew bump tool requires that griswoldthecat's fork of homebrew-core be updated to match the upstream master
-    # otherwise, a merge-conflict will prevent the PR from being accepted.
-    RUN --no-cache \
-        --mount type=secret,id=+secrets/earthly-technologies/github/griswoldthecat/id_rsa,target=.ssh/id_rsa \
-        --secret HOMEBREW_GITHUB_API_TOKEN=+secrets/earthly-technologies/github/griswoldthecat/token \
+    # do the initial setup and fetch (which can be cached)
+    WORKDIR /home/linuxbrew
+    RUN --mount type=secret,id=github/littleredcorvette/id_rsa,target=.ssh/id_rsa \
         eval "$(ssh-agent)" && \
         cat .ssh/id_rsa | ssh-add - && \
         git init homebrew-core && \
         cd homebrew-core && \
         git remote add Homebrew git@github.com:Homebrew/homebrew-core.git && \
-        git remote add griswoldthecat git@github.com:griswoldthecat/homebrew-core.git && \
+        git remote add littleredcorvette git@github.com:littleredcorvette/homebrew-core.git && \
+        echo "doing initial fetch" && \
+        git fetch Homebrew
+
+    # the brew bump tool requires that littleredcorvette's fork of homebrew-core be updated to match the upstream master
+    # otherwise, a merge-conflict will prevent the PR from being accepted.
+    WORKDIR /home/linuxbrew/homebrew-core
+    RUN --no-cache \
+        --mount type=secret,id=github/littleredcorvette/id_rsa,target=.ssh/id_rsa \
+        --secret HOMEBREW_GITHUB_API_TOKEN=github/littleredcorvette/homebrew-core-classic-token \
+        eval "$(ssh-agent)" && \
+        cat .ssh/id_rsa | ssh-add - && \
+        echo "doing fetch" && \
         git fetch Homebrew && \
-        git push griswoldthecat Homebrew/master:master && \
+        echo "doing push" && \
+        git push littleredcorvette Homebrew/master:master && \
+        echo "doing bump" && \
         brew bump earthly --open-pr
