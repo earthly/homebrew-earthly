@@ -41,6 +41,11 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew test-bot --only-tap-syntax
 
+      - name: brew update
+        env:
+          HOMEBREW_NO_INSTALL_FROM_API: 1
+        run: brew update
+
       - name: build earthly bottles
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
