@@ -41,11 +41,15 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew test-bot --only-formulae earthly && ls -la
 
-      - name: shellcheck testing
+      - name: shellcheck testing 1
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
-        run: ls earthly--*.bottle.*
-        #| grep bottle | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
+        run: ls earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
+
+      - name: shellcheck testing 2
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+        run: ls earthly--* | grep bottle | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
 
       - name: syntax check
         env:
