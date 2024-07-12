@@ -36,19 +36,6 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew test-bot --only-setup
 
-      - name: build earthly bottles
-        env:
-          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
-        run: brew test-bot --only-formulae earthly
-
-      # homebrew intentially adds in two hyphens under
-      # https://github.com/Homebrew/brew/blob/b55498269f1fb0380cfd7122f6bbc0fc0125c35f/Library/Homebrew/software_spec.rb#L279
-      - name: a
-        run: ls earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
-
-      - name: b
-        run: find earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
-
       - name: syntax check
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
@@ -67,10 +54,10 @@ jobs:
       # homebrew intentially adds in two hyphens under
       # https://github.com/Homebrew/brew/blob/b55498269f1fb0380cfd7122f6bbc0fc0125c35f/Library/Homebrew/software_spec.rb#L279
       - name: remove double hyphens which are produced by test-bot
-        run: ls earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}' | sh
+        run: find earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}' | sh
 
       - name: move bottles into bottles/ dir
-        run: mkdir bottles/ && mv *.bottle.* bottles/
+        run: mkdir bottles/ && mv ./*.bottle.* bottles/
 
       - name: merge bottles
         env:
