@@ -76,6 +76,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |-
           set -e
+          # shellcheck disable=SC2153
           VERSION="${GITHUB_REF#refs/heads/release-v}"
           if ! echo "$VERSION" | grep '^[0-9]\+\.[0-9]\+\.[0-9]\+$' >/dev/null; then
             echo "ERROR: failed to detect semantic version; got $VERSION"
@@ -112,7 +113,7 @@ jobs:
         run: |-
           # this should be different than GITHUB_SHA, due to brew bottle comitting a change
           SHA=$(git rev-parse HEAD)
-          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/"$GITHUB_REPOSITORY"
           git fetch -a
           git checkout main
           git reset --hard origin/main
