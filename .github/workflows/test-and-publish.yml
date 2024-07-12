@@ -36,6 +36,11 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew test-bot --only-setup
 
+      - name: build earthly bottles (let me see whats happening)
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+        run: brew test-bot --only-formulae earthly && ls -la
+
       - name: syntax check
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
