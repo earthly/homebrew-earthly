@@ -36,6 +36,19 @@ jobs:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
         run: brew test-bot --only-setup
 
+      - name: build earthly bottles
+        env:
+          HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
+        run: brew test-bot --only-formulae earthly
+
+      # homebrew intentially adds in two hyphens under
+      # https://github.com/Homebrew/brew/blob/b55498269f1fb0380cfd7122f6bbc0fc0125c35f/Library/Homebrew/software_spec.rb#L279
+      - name: a
+        run: ls earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
+
+      - name: b
+        run: find earthly--*.bottle.* | awk -F "--" '{print "mv " $0 " " $1"-"$2}'
+
       - name: syntax check
         env:
           HOMEBREW_GITHUB_API_TOKEN: ${{ github.token }}
@@ -77,7 +90,7 @@ jobs:
         run: |-
           set -e
           VERSION="${GITHUB_REF#refs/heads/release-v}"
-          if ! echo $VERSION | grep '^[0-9]\+\.[0-9]\+\.[0-9]\+$' >/dev/null; then
+          if ! echo "$VERSION" | grep '^[0-9]\+\.[0-9]\+\.[0-9]\+$' >/dev/null; then
             echo "ERROR: failed to detect semantic version; got $VERSION"
             exit 1
           fi
@@ -123,5 +136,5 @@ jobs:
 
       - name: post to slack on failure
         run: |-
-          curl -s -X POST -H 'Content-type: application/json' --data '{ "attachments": [ { "fallback": "Failed to build release", "title": "earthly/homebrew-earthly tap", "title_link": "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID", "text": "Failed to build release!", "color": "#CC0000" } ] }' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
+          curl -s -X POST -H 'Content-type: application/json' --data '{ "attachments": [ { "fallback": "Failed to build release", "title": "earthly/homebrew-earthly tap", "title_link": "'"$GITHUB_SERVER_URL"'/'"$GITHUB_REPOSITORY"'/actions/runs/'"$GITHUB_RUN_ID"', "text": "Failed to build release!", "color": "#CC0000" } ] }' "${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}"
         if: ${{ failure() }}
